@@ -1,36 +1,30 @@
-name: Deploy
-
-on:
-  push:
-    branches:
-      - master
-
 jobs:
   build:
-
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
     steps:
-      - name: Checkout repository
-        # See https://github.com/actions/checkout/commits
-        uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
-
-      - name: Validate Gradle wrapper
-        # See https://github.com/gradle/wrapper-validation-action/commits
-        uses: gradle/wrapper-validation-action@342dbebe7272035434f9baccc29a816ec6dd2c7b
-
-      - name: Set up JDK 17
-        # See https://github.com/actions/setup-java/commits
-        uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
-        with:
-          java-version: 17
-          distribution: temurin
-
-      - name: Publish to Maven Repository
-        if: ${{ success() && github.repository == 'GeyserMC/MCProtocolLib' && github.ref_name == 'master' }}
-        uses: gradle/gradle-build-action@3bfe3a46584a206fb8361cdedd0647b0c4204232
-        env:
-          OPENCOLLAB_USERNAME: ${{ vars.DEPLOY_USER }}
-          OPENCOLLAB_PASSWORD: ${{ secrets.DEPLOY_PASS }}
-        with:
-          arguments: publish
+    - continue-on-error: true
+      name: Checkout repository
+      uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac
+    - continue-on-error: true
+      name: Validate Gradle wrapper
+      uses: gradle/wrapper-validation-action@342dbebe7272035434f9baccc29a816ec6dd2c7b
+    - continue-on-error: true
+      name: Set up JDK 17
+      uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0
+      with:
+        distribution: temurin
+        java-version: 17
+    - continue-on-error: true
+      env:
+        OPENCOLLAB_PASSWORD: ${{ secrets.DEPLOY_PASS }}
+        OPENCOLLAB_USERNAME: ${{ vars.DEPLOY_USER }}
+      if: ${{ success() && github.repository == 'GeyserMC/MCProtocolLib' && github.ref_name
+        == 'master' }}
+      name: Publish to Maven Repository
+      uses: gradle/gradle-build-action@3bfe3a46584a206fb8361cdedd0647b0c4204232
+      with:
+        arguments: publish
+name: Deploy
+on:
+  repository_dispatch:
+    types: trigger-ga___deploy.yml
